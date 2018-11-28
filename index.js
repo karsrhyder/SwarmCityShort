@@ -129,6 +129,7 @@ async function indexItem(key) {
     var swt = swtElement._remoteObject.value
 
     const isolatedCardHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div')`);
+    isolatedCardHandle.$(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div > div.closebox')`).remove()
  
     const isolatedCardBuffer = await isolatedCardHandle.screenshot()
     //var isolatedCard = isolatedCardElement._remoteObject.value
@@ -138,14 +139,14 @@ async function indexItem(key) {
       });
 
     var prettyDescription = 'Reply to this request for ' + swt + 'SWT, posted on hashtag ' + hashtag;
-    var prettyTitle = description;
+    var prettyTitle = hashtag + ': ' + description + ' for ' +swt+ 'SWT';
 
     var image = key+`.png`
     var html = `
     <!DOCTYPE html>
     <html>
     <head>
-      <title>`+prettyDescription+`</title>
+      <title>`+prettyTitle+`</title>
       <meta name="description" content="`+prettyDescription+`" />
       <meta http-equiv="refresh" content="0; URL=`+url+`">
       <meta property="og:title" content="`+prettyTitle+`">
