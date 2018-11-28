@@ -8,6 +8,7 @@ const queue = level('./queue')
 const shortid = require('shortid');
 const PORT = process.env.PORT || 8080;
 const app = express();
+const cors = require('cors')
 
 const asyncMiddleware = fn =>
     (req, res, next) => {
@@ -42,6 +43,10 @@ const isAllowedUrl = (string) => {
 
 //   next();
 // });
+
+app.use(cors({
+    origin: '*'
+  }));
 
 // Init code that gets run before all request handlers.
 app.use(express.static('shots'))
