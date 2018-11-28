@@ -99,8 +99,8 @@ async function indexItem(key) {
     // const hashtag = await page.evaluate(() => document.querySelector('.namebox').innerContent);
     // const description = await page.evaluate(() => document.querySelector('.description').innerContent);
 
-    const hashtag = '';
-    const description = '';
+    const hashtag = 'BridgeTest';
+    const description = 'This is a test';
 
     const opts = {
       fullPage,
@@ -136,7 +136,7 @@ async function indexItem(key) {
       <meta property="og:title" content="Request for `+key+`">
       <meta property="og:image" content="/`+image+`">
       <meta property="og:description" content="`+description+`">
-      <meta property="og:url" content="`+url+`">
+      <meta property="og:url" content="https://i.swarm.city/r/`+key+`">
       <meta name="twitter:card" content="/`+image+`">
     </head>
     <body><img src="/`+image+`" width="375" height="375"></body>
