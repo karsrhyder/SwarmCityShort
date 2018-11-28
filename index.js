@@ -129,17 +129,18 @@ async function indexItem(key) {
     var swt = swtElement._remoteObject.value
 
     const isolatedCardHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div')`);
-    // isolatedCardHandle.$(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div > div.closebox')`).remove()
- 
+
+    const closebox = await isolatedCardHandle.$eval(`.closebox`, e => e.children[0].hidden = true);
+    const linkbox = await isolatedCardHandle.$eval(`.linkbox`, e => e.children[1].hidden = true);
+
     const isolatedCardBuffer = await isolatedCardHandle.screenshot()
-    //var isolatedCard = isolatedCardElement._remoteObject.value
 
     fs.writeFile('shots/'+key+'.png', isolatedCardBuffer, function (err) {
         if (err) throw err;
       });
 
-    var prettyDescription = 'Reply to this request for ' + swt + 'SWT, posted on hashtag ' + hashtag;
-    var prettyTitle = hashtag + ': ' + description + ' for ' +swt+ 'SWT';
+    var prettyDescription = 'Reply to this request for ' + swt + ' SWT, posted on hashtag ' + hashtag;
+    var prettyTitle = hashtag + ': ' + description + ' for ' +swt+ ' SWT';
 
     var image = key+`.png`
     var html = `
