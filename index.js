@@ -129,7 +129,7 @@ async function indexItem(key) {
     var swt = swtElement._remoteObject.value
 
     const isolatedCardHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div')`);
-    isolatedCardHandle.$(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div > div.closebox')`).remove()
+    // isolatedCardHandle.$(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div > div.closebox')`).remove()
  
     const isolatedCardBuffer = await isolatedCardHandle.screenshot()
     //var isolatedCard = isolatedCardElement._remoteObject.value
