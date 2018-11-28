@@ -147,7 +147,7 @@ async function indexItem(key) {
     <head>
       <title>`+prettyDescription+`</title>
       <meta name="description" content="`+prettyDescription+`" />
-      <meta http-equiv="refresh" content="2; URL=`+url+`">
+      <meta http-equiv="refresh" content="0; URL=`+url+`">
       <meta property="og:title" content="`+prettyTitle+`">
       <meta property="og:image" content="https://i.swarm.city/`+image+`">
       <meta name="twitter:card" content="summary" />
