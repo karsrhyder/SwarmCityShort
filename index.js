@@ -63,7 +63,7 @@ app.get('/s/:url', async (request, response) => {
     time: Date.now()
   }
   var res = await queue.put(shortcode, JSON.stringify(data))
-  response.type('text').send(shortcode)
+  response.type('text').send('https://i.swarm.city/r/'+shortcode)
 });
 
 async function indexItem(key) {
