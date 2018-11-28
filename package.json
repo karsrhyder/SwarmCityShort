@@ -1,0 +1,18 @@
+{
+  "name": "swarmcityshortshare",
+  "version": "1.0.0",
+  "description": "SwarmCityShortShare",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "level": "^4.0.0",
+    "puppeteer": "^1.10.0",
+    "shortid": "^2.2.14"
+  }
+}
