@@ -158,7 +158,7 @@ async function indexItem(key) {
       <meta name="twitter:card" content="`+prettyDescription+`">
     </head>
     <body>
-   
+    <img src="https://i.swarm.city/`+image+`">
     </body>
     </html>
   `
