@@ -180,6 +180,8 @@ async function indexItem(key) {
   } catch (err) {
     //await queue.del(shortcode)
     //response.status(500).send(err.toString());
+    queue.del(key)
+    console.log("Removed item ", key, " from list")
     console.log(err.toString())
   }
 
