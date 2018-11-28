@@ -170,8 +170,8 @@ async function indexItem(key) {
     //response.type('image/png').send(buffer);
     //response.type('text').send(key)
 
-    //queue.del(key)
-    //console.log("Removed item ", key, " from list")
+    queue.del(key)
+    console.log("Removed item ", key, " from list")
 
     db.put(key, Date.now())
       //stream.destroy();
