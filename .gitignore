@@ -30,3 +30,4 @@ db/
 queue/
 shots/
 package-lock.json
+\.DS_Store

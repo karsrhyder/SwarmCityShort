@@ -13,6 +13,7 @@
     "express": "^4.16.4",
     "level": "^4.0.0",
     "puppeteer": "^1.10.0",
+    "query-selector-shadow-dom": "^0.3.0",
     "shortid": "^2.2.14"
   }
 }

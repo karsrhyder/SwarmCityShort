@@ -9,7 +9,6 @@ const shortid = require('shortid');
 const PORT = process.env.PORT || 8080;
 const app = express();
 
-
 const asyncMiddleware = fn =>
     (req, res, next) => {
     Promise.resolve(fn(req, res, next))
@@ -96,11 +95,7 @@ async function indexItem(key) {
     await page.setViewport(viewport);
     await page.goto(url, {waitUntil: 'networkidle0'});
 
-    // const hashtag = await page.evaluate(() => document.querySelector('.namebox').innerContent);
-    // const description = await page.evaluate(() => document.querySelector('.description').innerContent);
-
-    const hashtag = 'BridgeTest';
-    const description = 'This is a test';
+    
 
     const opts = {
       fullPage,
@@ -118,33 +113,55 @@ async function indexItem(key) {
 
     let buffer;
 
-    buffer = await page.screenshot(opts);
+    const descriptionHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div > div.description')`);
+    const descriptionElement = await (await descriptionHandle.getProperty('textContent'));
+    var description = descriptionElement._remoteObject.value
+    description = description.replace(/\s+/g,' ').trim() // results in 'white space'
 
 
-    fs.writeFile('shots/'+key+'.png', buffer, function (err) {
-      if (err) throw err;
-    });
+    const hashtagHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('display-simpledeal-title').shadowRoot.querySelector('div > div.namebox')`);
+    const hashtagElement = await (await hashtagHandle.getProperty('textContent'));
+    var hashtag = hashtagElement._remoteObject.value
+    hashtag = hashtag.replace(/\s+/g,' ').trim() // results in 'white space'
+
+    const swtHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div > div.seeker > div.pricebox > div.value')`);
+    const swtElement = await (await swtHandle.getProperty('textContent'));
+    var swt = swtElement._remoteObject.value
+
+    const isolatedCardHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div')`);
+ 
+    const isolatedCardBuffer = await isolatedCardHandle.screenshot()
+    //var isolatedCard = isolatedCardElement._remoteObject.value
+
+    fs.writeFile('shots/'+key+'.png', isolatedCardBuffer, function (err) {
+        if (err) throw err;
+      });
+
+    var prettyDescription = 'Reply to this request for ' + swt + 'SWT, posted on hashtag ' + hashtag;
+    var prettyTitle = description;
 
     var image = key+`.png`
     var html = `
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Swarm City `+hashtag+`</title>
-      <meta name="description" content="`+description+`" />
+      <title>`+prettyDescription+`</title>
+      <meta name="description" content="`+prettyDescription+`" />
       <meta http-equiv="refresh" content="2; URL=`+url+`">
-      <meta property="og:title" content="Request for `+key+`">
+      <meta property="og:title" content="`+prettyTitle+`">
       <meta property="og:image" content="https://i.swarm.city/`+image+`">
       <meta name="twitter:card" content="summary" />
         <meta name="twitter:site" content="@SwarmCityDapp" />
     <meta name="twitter:creator" content="@SwarmCityDapp" />
-      <meta property="og:image:width" content="375">
-      <meta property="og:image:height" content="375">
-      <meta property="og:description" content="`+description+`">
+      <meta property="og:description" content="`+prettyDescription+`">
       <meta property="og:url" content="https://i.swarm.city/r/`+key+`">
-      <meta name="twitter:card" content="`+description+`">
+      <meta name="twitter:card" content="`+prettyDescription+`">
     </head>
-    <body><img src="https://i.swarm.city/`+image+`" width="375" height="375"></body>
+    <body>
+    <h1>`+prettyTitle+`</h1>
+    <p>`+prettyDescription+`</p>
+    <img src="https://i.swarm.city/`+image+`">
+    </body>
     </html>
   `
     fs.writeFile('shots/'+key+'.html', html, function (err) {
@@ -153,10 +170,10 @@ async function indexItem(key) {
     //response.type('image/png').send(buffer);
     //response.type('text').send(key)
 
-    queue.del(key)
-    console.log("Removed item ", key, " from list")
+    //queue.del(key)
+    //console.log("Removed item ", key, " from list")
 
-    db.put(shortcode, Date.now())
+    db.put(key, Date.now())
       //stream.destroy();
     //return true
 
