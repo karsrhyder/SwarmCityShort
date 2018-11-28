@@ -134,12 +134,14 @@ async function indexItem(key) {
       <meta name="description" content="`+description+`" />
       <meta http-equiv="refresh" content="2; URL=`+url+`">
       <meta property="og:title" content="Request for `+key+`">
-      <meta property="og:image" content="/`+image+`">
+      <meta property="og:image" content="https://i.swarm.city/`+image+`">
+      <meta property="og:image:width" content="375">
+      <meta property="og:image:height" content="375">
       <meta property="og:description" content="`+description+`">
       <meta property="og:url" content="https://i.swarm.city/r/`+key+`">
-      <meta name="twitter:card" content="/`+image+`">
+      <meta name="twitter:card" content="https://i.swarm.city/`+image+`">
     </head>
-    <body><img src="/`+image+`" width="375" height="375"></body>
+    <body><img src="https://i.swarm.city/`+image+`" width="375" height="375"></body>
     </html>
   `
     fs.writeFile('shots/'+key+'.html', html, function (err) {
