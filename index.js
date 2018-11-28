@@ -135,11 +135,14 @@ async function indexItem(key) {
       <meta http-equiv="refresh" content="2; URL=`+url+`">
       <meta property="og:title" content="Request for `+key+`">
       <meta property="og:image" content="https://i.swarm.city/`+image+`">
+      <meta name="twitter:card" content="summary" />
+        <meta name="twitter:site" content="@SwarmCityDapp" />
+    <meta name="twitter:creator" content="@SwarmCityDapp" />
       <meta property="og:image:width" content="375">
       <meta property="og:image:height" content="375">
       <meta property="og:description" content="`+description+`">
       <meta property="og:url" content="https://i.swarm.city/r/`+key+`">
-      <meta name="twitter:card" content="https://i.swarm.city/`+image+`">
+      <meta name="twitter:card" content="`+description+`">
     </head>
     <body><img src="https://i.swarm.city/`+image+`" width="375" height="375"></body>
     </html>
