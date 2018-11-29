@@ -9,6 +9,7 @@ const shortid = require('shortid');
 const PORT = process.env.PORT || 8080;
 const app = express();
 const cors = require('cors')
+var browser;
 
 const asyncMiddleware = fn =>
     (req, res, next) => {
@@ -16,6 +17,11 @@ const asyncMiddleware = fn =>
         .catch(next);
     };
 
+    const viewport = {
+        width: 375,
+        height: 662,
+        deviceScaleFactor: 2
+      };
 
 
 const isAllowedUrl = (string) => {
@@ -68,6 +74,24 @@ app.get('/s/:url', async (request, response) => {
     time: Date.now()
   }
   var res = await queue.put(shortcode, JSON.stringify(data))
+  var html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Preview not loaded yet</title>
+      <meta name="description" content="Please try again in a few seconds." />
+      <meta property="og:title" content="Preview not loaded yet">
+        <meta name="twitter:site" content="@SwarmCityDapp" />
+    <meta name="twitter:creator" content="@SwarmCityDapp" />
+      <meta property="og:description" ccontent="Please try again in a few seconds.">
+    </head>
+    <body>
+    </body>
+    </html>
+  `
+    fs.writeFile('shots/'+shortcode+'.html', html, function (err) {
+      if (err) throw err;
+    });
   response.type('text').send('https://i.swarm.city/r/'+shortcode)
 });
 
@@ -78,29 +102,15 @@ async function indexItem(key) {
   var result = JSON.parse(res)
   var url = decodeURIComponent(result.url)
 
-  var browser = await puppeteer.launch({
-    dumpio: true,
-    // headless: false,
-    // executablePath: 'google-chrome',
-    args: ['--no-sandbox', '--disable-setuid-sandbox'], // , '--disable-dev-shm-usage']
-  });
+  const page = await browser.newPage();
+  await page.setViewport(viewport);
 
-  
-  const viewport = {
-    width: 375,
-    height: 662,
-    deviceScaleFactor: 2
-  };
 
   let fullPage = false;
- 
 
   try {
-    const page = await browser.newPage();
-    await page.setViewport(viewport);
-    await page.goto(url, {waitUntil: 'networkidle0'});
-
     
+    await page.goto(url, {waitUntil: 'networkidle0'});
 
     const opts = {
       fullPage,
@@ -165,7 +175,7 @@ async function indexItem(key) {
       <meta name="twitter:card" content="`+prettyDescription+`">
     </head>
     <body>
-    <img src="https://i.swarm.city/`+image+`">
+    <img src="https://i.swarm.city/`+image+`" width="1" height="1">
     </body>
     </html>
   `
@@ -234,6 +244,16 @@ signals.forEach(sig => {
 
 async function runShortService() {
   console.log("Swarm City Short Service")
+
+  browser = await puppeteer.launch({
+    dumpio: true,
+    // headless: false,
+    // executablePath: 'google-chrome',
+    args: ['--no-sandbox', '--disable-setuid-sandbox'], // , '--disable-dev-shm-usage']
+  });
+
+ 
+
   // queue monitor
 setInterval(() => {
   iterateQueue();
