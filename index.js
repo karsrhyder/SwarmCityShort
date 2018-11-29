@@ -73,24 +73,7 @@ app.get('/s/:url', async (request, response) => {
     time: Date.now()
   }
   var res = await queue.put(shortcode, JSON.stringify(data))
-  var html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Preview not loaded yet</title>
-      <meta name="description" content="Please try again in a few seconds." />
-      <meta property="og:title" content="Preview not loaded yet">
-        <meta name="twitter:site" content="@SwarmCityDapp" />
-    <meta name="twitter:creator" content="@SwarmCityDapp" />
-      <meta property="og:description" ccontent="Please try again in a few seconds.">
-    </head>
-    <body>
-    </body>
-    </html>
-  `
-    fs.writeFile('shots/'+shortcode+'.html', html, function (err) {
-      if (err) throw err;
-    });
+  
   response.type('text').send('https://i.swarm.city/r/'+shortcode)
 });
 
