@@ -152,16 +152,27 @@ async function indexItem(key) {
     <html>
     <head>
       <title>`+prettyTitle+`</title>
-      <meta name="description" content="`+prettyDescription+`" />
-      <meta http-equiv="refresh" content="0; URL=`+url+`">
-      <meta property="og:title" content="`+prettyTitle+`">
-      <meta property="og:image" content="https://i.swarm.city/`+image+`">
-      <meta name="twitter:card" content="summary" />
-        <meta name="twitter:site" content="@SwarmCityDapp" />
-    <meta name="twitter:creator" content="@SwarmCityDapp" />
-      <meta property="og:description" content="`+prettyDescription+`">
-      <meta property="og:url" content="https://i.swarm.city/r/`+key+`">
-      <meta name="twitter:card" content="`+prettyDescription+`">
+        <meta name="twitter:card" content="summary_large_image"/>
+        <meta name="twitter:description" content="`+prettyDescription+`"/>
+        <meta name="twitter:title" content=""/>
+        <meta name="twitter:widgets:csp" content="on"/>
+        <meta name="twitter:site" content="@SwarmCityDapp"/
+        ><meta name="twitter:image" content="https://i.swarm.city/`+image+`"/>
+        <meta name="twitter:image:width" content="375"/>
+        <meta name="twitter:image:height" content="375"/>
+
+        <meta property="og:title" content="`+prettyTitle+`">
+        <meta property="og:description" content="`+prettyDescription+`"/>
+        <meta property="og:url" content="https://i.swarm.city/r/`+key+`"/>
+        <meta property="og:image" content="https://i.swarm.city/`+image+`"/>
+        <meta property="og:image:width" content="375"/>
+        <meta property="og:image:height" content="375"/>
+        <meta property="og:type" content="article"/>
+        <meta property="og:site_name" content="Swarm.city"/>
+
+        <meta name="description" content="`+prettyDescription+`" />
+        <meta http-equiv="refresh" content="0; URL=`+url+`">
+
     </head>
     <body>
     <img src="https://i.swarm.city/`+image+`" width="1" height="1">
@@ -245,3 +256,6 @@ setInterval(() => {
 }
 
 runShortService()
+
+
+
