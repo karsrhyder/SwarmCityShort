@@ -154,7 +154,7 @@ async function indexItem(key) {
       <title>`+prettyTitle+`</title>
         <meta name="twitter:card" content="summary_large_image"/>
         <meta name="twitter:description" content="`+prettyDescription+`"/>
-        <meta name="twitter:title" content=""/>
+        <meta name="twitter:title" content="`+prettyTitle+`"/>
         <meta name="twitter:widgets:csp" content="on"/>
         <meta name="twitter:site" content="@SwarmCityDapp"/
         ><meta name="twitter:image" content="https://i.swarm.city/`+image+`"/>
