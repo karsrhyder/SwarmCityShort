@@ -11,9 +11,14 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.16.4",
+    "generic-pool": "^3.4.2",
     "level": "^4.0.0",
+    "polly-js": "^1.6.3",
+    "promise-retry": "^1.1.1",
+    "promise-retry-or-throw": "^1.0.5",
     "puppeteer": "^1.10.0",
     "query-selector-shadow-dom": "^0.3.0",
-    "shortid": "^2.2.14"
+    "shortid": "^2.2.14",
+    "sleep-promise": "^8.0.1"
   }
 }

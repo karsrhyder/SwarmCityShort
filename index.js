@@ -9,6 +9,7 @@ const shortid = require('shortid');
 const PORT = process.env.PORT || 8080;
 const app = express();
 const cors = require('cors')
+const browserPagePool = require('./services/browserPagePool.js');
 
 const asyncMiddleware = fn =>
     (req, res, next) => {
@@ -16,12 +17,19 @@ const asyncMiddleware = fn =>
         .catch(next);
     };
 
-    const viewport = {
-        width: 375,
-        height: 662,
-        deviceScaleFactor: 2
-      };
+const viewport = {
+    width: 375,
+    height: 662,
+    deviceScaleFactor: 2
+  };
 
+async function screenShot(url) {
+    const page = await browserPagePool.acquire();
+    await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
+    const screenshot = await page.screenshot();
+    await browserPagePool.release(page);
+    return screenshot;
+}
 
 const isAllowedUrl = (string) => {
   try {
@@ -53,12 +61,16 @@ app.use(cors({
     origin: '*'
   }));
 
+
 // Init code that gets run before all request handlers.
 app.use(express.static('shots'))
 
 app.get('/r/:item', async (request, response) => {
   response.sendFile(__dirname + '/shots/'+request.params.item+'.html');
 })
+
+
+
 app.get('/s/:url', async (request, response) => {
   console.log('asking for short: ', request.params.url)
   const url = request.params.url;
@@ -77,51 +89,25 @@ app.get('/s/:url', async (request, response) => {
   response.type('text').send('https://i.swarm.city/r/'+shortcode)
 });
 
-async function indexItem(key) {
+async function indexItem(url, key) {
   // Default to a reasonably large viewport for full page screenshots.
 
-  var res = await queue.get(key)
-  var result = JSON.parse(res)
-  var url = decodeURIComponent(result.url)
-
-  const browser = await puppeteer.launch({
-    dumpio: true,
-    // headless: false,
-    // executablePath: 'google-chrome',
-    args: ['--no-sandbox', '--disable-setuid-sandbox'], // , '--disable-dev-shm-usage']
-  });
-
-  const page = await browser.newPage();
-  await page.setViewport(viewport);
-
+ console.log(Date.now(), 'Fetching', key, url)
+  
 
   let fullPage = false;
 
   try {
     
-    await page.goto(url, {waitUntil: 'networkidle0'});
-
-    const opts = {
-      fullPage,
-      // omitBackground: true
-    };
-
-    if (!fullPage) {
-      opts.clip = {
-        x: 0,
-        y: 90,
-        width: 375,
-        height: 375
-      };
-    }
-
+    const page = await browserPagePool.acquire();
+    await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
+  
     let buffer;
 
     const descriptionHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div > div.description')`);
     const descriptionElement = await (await descriptionHandle.getProperty('textContent'));
     var description = descriptionElement._remoteObject.value
     description = description.replace(/\s+/g,' ').trim() // results in 'white space'
-
 
     const hashtagHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('display-simpledeal-title').shadowRoot.querySelector('div > div.namebox')`);
     const hashtagElement = await (await hashtagHandle.getProperty('textContent'));
@@ -132,21 +118,11 @@ async function indexItem(key) {
     const swtElement = await (await swtHandle.getProperty('textContent'));
     var swt = swtElement._remoteObject.value
 
-    const isolatedCardHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div')`);
-
-    const closebox = await isolatedCardHandle.$eval(`.closebox`, e => e.children[0].hidden = true);
-    const linkbox = await isolatedCardHandle.$eval(`.linkbox`, e => e.children[1].hidden = true);
-
-    const isolatedCardBuffer = await isolatedCardHandle.screenshot()
-
-    fs.writeFile('shots/'+key+'.png', isolatedCardBuffer, function (err) {
-        if (err) throw err;
-      });
-
     var prettyDescription = 'Reply to this request for ' + swt + ' SWT, posted on hashtag ' + hashtag;
     var prettyTitle = hashtag + ': ' + description + ' for ' +swt+ ' SWT';
 
     var image = key+`.png`
+    
     var html = `
     <!DOCTYPE html>
     <html>
@@ -158,15 +134,13 @@ async function indexItem(key) {
         <meta name="twitter:widgets:csp" content="on"/>
         <meta name="twitter:site" content="@SwarmCityDapp"/>
         <meta name="twitter:image" content="https://i.swarm.city/`+image+`"/>
-        <meta name="twitter:image:width" content="375"/>
-        <meta name="twitter:image:height" content="375"/>
+
 
         <meta property="og:title" content="`+prettyTitle+`">
         <meta property="og:description" content="`+prettyDescription+`"/>
         <meta property="og:url" content="https://i.swarm.city/r/`+key+`"/>
         <meta property="og:image" content="https://i.swarm.city/`+image+`"/>
-        <meta property="og:image:width" content="375"/>
-        <meta property="og:image:height" content="375"/>
+
         <meta property="og:type" content="article"/>
         <meta property="og:site_name" content="Swarm.city"/>
 
@@ -182,6 +156,19 @@ async function indexItem(key) {
     fs.writeFile('shots/'+key+'.html', html, function (err) {
       if (err) throw err;
     });
+
+    const isolatedCardHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div')`);
+
+    const closebox = await isolatedCardHandle.$eval(`.closebox`, e => e.children[0].hidden = true);
+    const linkbox = await isolatedCardHandle.$eval(`.linkbox`, e => e.children[1].hidden = true);
+
+    const isolatedCardBuffer = await isolatedCardHandle.screenshot()
+
+    fs.writeFile('shots/'+key+'.png', isolatedCardBuffer, function (err) {
+        if (err) throw err;
+      });
+
+  
     //response.type('image/png').send(buffer);
     //response.type('text').send(key)
 
@@ -195,16 +182,15 @@ async function indexItem(key) {
   } catch (err) {
     //await queue.del(shortcode)
     //response.status(500).send(err.toString());
-    queue.del(key)
-    console.log("Removed item ", key, " from list")
+    
     console.log(err.toString())
   }
 
-  await browser.close();
+  //await browser.close();
 }
 
 async function iterateQueue () {
-  console.log('Going through queue')
+  console.log(Date.now(), ' Going through queue')
   var stream = queue
   .createReadStream({
   keys: true,
@@ -213,9 +199,12 @@ async function iterateQueue () {
   .on("data", asyncMiddleware(async item => {
       //var result = JSON.parse(item)
       //console.log(url)
-      await indexItem(item.key)
-      console.log("item:", item); 
-      
+      var res = await queue.get(item.key)
+      var result = JSON.parse(res)
+      var url = decodeURIComponent(result.url)
+      queue.del(item.key)
+      console.log("Removed item ", item.key, " from list")
+      await indexItem(url, item.key)
   }))
 }
 
@@ -251,8 +240,9 @@ async function runShortService() {
 
   // queue monitor
 setInterval(() => {
+
   iterateQueue();
-}, 10 * 1000);
+}, 1000);
 }
 
 runShortService()
