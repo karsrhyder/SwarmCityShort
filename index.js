@@ -9,7 +9,6 @@ const shortid = require('shortid');
 const PORT = process.env.PORT || 8080;
 const app = express();
 const cors = require('cors')
-var browser;
 
 const asyncMiddleware = fn =>
     (req, res, next) => {
@@ -101,6 +100,13 @@ async function indexItem(key) {
   var res = await queue.get(key)
   var result = JSON.parse(res)
   var url = decodeURIComponent(result.url)
+
+  const browser = await puppeteer.launch({
+    dumpio: true,
+    // headless: false,
+    // executablePath: 'google-chrome',
+    args: ['--no-sandbox', '--disable-setuid-sandbox'], // , '--disable-dev-shm-usage']
+  });
 
   const page = await browser.newPage();
   await page.setViewport(viewport);
@@ -245,12 +251,7 @@ signals.forEach(sig => {
 async function runShortService() {
   console.log("Swarm City Short Service")
 
-  browser = await puppeteer.launch({
-    dumpio: true,
-    // headless: false,
-    // executablePath: 'google-chrome',
-    args: ['--no-sandbox', '--disable-setuid-sandbox'], // , '--disable-dev-shm-usage']
-  });
+  
 
  
 
