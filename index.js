@@ -102,8 +102,20 @@ async function indexItem(url, key) {
   let fullPage = false;
 
   try {
+
+    
     
     const page = await browserPagePool.acquire();
+
+    const viewport = {
+      width: 375,
+      height: 662,
+      deviceScaleFactor: 2
+    };
+  
+
+    await page.setViewport(viewport);
+
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
   
     let buffer;
