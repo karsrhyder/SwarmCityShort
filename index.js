@@ -66,10 +66,14 @@ app.use(cors({
 app.use(express.static('shots'))
 
 app.get('/r/:item', async (request, response) => {
-  response.sendFile(__dirname + '/shots/'+request.params.item+'.html');
+  response.sendFile(__dirname + '/shots/'+request.params.item+'.html', function(err, res){
+    if(err) {
+      response.status(404).send('Not found (yet)');
+    }
+  })
+   
+
 })
-
-
 
 app.get('/s/:url', async (request, response) => {
   console.log('asking for short: ', request.params.url)
