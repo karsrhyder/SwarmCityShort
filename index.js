@@ -10,18 +10,13 @@ const PORT = process.env.PORT || 8080;
 const app = express();
 const cors = require('cors')
 const browserPagePool = require('./services/browserPagePool.js');
+const RENDER_CACHE = new Map();
 
 const asyncMiddleware = fn =>
     (req, res, next) => {
     Promise.resolve(fn(req, res, next))
         .catch(next);
     };
-
-const viewport = {
-    width: 375,
-    height: 662,
-    deviceScaleFactor: 2
-  };
 
 async function screenShot(url) {
     const page = await browserPagePool.acquire();
@@ -31,14 +26,6 @@ async function screenShot(url) {
     return screenshot;
 }
 
-const isAllowedUrl = (string) => {
-  try {
-    const url = new URL(string);
-    return url.hostname !== 'pptraas.com' && !url.hostname.startsWith('puppeteerexamples');
-  } catch (err) {
-    return false;
-  }
-};
 // Adds cors, records analytics hit, and prevents self-calling loops.
 // app.use((request, response, next) => {
 //   const url = request.query.url;
@@ -78,6 +65,10 @@ app.get('/r/:item', async (request, response) => {
 app.get('/s/:url', async (request, response) => {
   console.log('asking for short: ', request.params.url)
   const url = request.params.url;
+  if (RENDER_CACHE.has(url)) {
+    console.log('serving from cache')
+    return response.type('text').send('https://i.swarm.city/r/'+RENDER_CACHE.get(url))
+  }
   if (!url) {
     return response.status(400).send(
       'Please provide a URL. Example: ?url=https://example.com');
@@ -89,7 +80,8 @@ app.get('/s/:url', async (request, response) => {
     time: Date.now()
   }
   var res = await queue.put(shortcode, JSON.stringify(data))
-  
+  console.log('sending to queue')
+  RENDER_CACHE.set(url, shortcode); 
   response.type('text').send('https://i.swarm.city/r/'+shortcode)
 });
 
