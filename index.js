@@ -81,7 +81,6 @@ app.get('/s/:url', async (request, response) => {
   }
   var res = await queue.put(shortcode, JSON.stringify(data))
   console.log('sending to queue')
-  RENDER_CACHE.set(url, shortcode); 
   response.type('text').send('https://i.swarm.city/r/'+shortcode)
 });
 
@@ -185,8 +184,10 @@ async function indexItem(url, key) {
     //response.type('image/png').send(buffer);
     //response.type('text').send(key)
 
+
     queue.del(key)
     console.log("Removed item ", key, " from list")
+    RENDER_CACHE.set(url, shortcode); 
 
     db.put(key, Date.now())
       //stream.destroy();
