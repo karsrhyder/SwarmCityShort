@@ -64,7 +64,7 @@ app.get('/r/:item', async (request, response) => {
 
 app.get('/s/:url', async (request, response) => {
   console.log('asking for short: ', request.params.url)
-  const url = request.params.url;
+  const url = decodeURIComponent(request.params.url);
   if (RENDER_CACHE.has(url)) {
     console.log('serving from cache')
     return response.type('text').send('https://i.swarm.city/r/'+RENDER_CACHE.get(url))
@@ -187,7 +187,7 @@ async function indexItem(url, key) {
 
     queue.del(key)
     console.log("Removed item ", key, " from list")
-    RENDER_CACHE.set(encodeURIComponent(url), shortcode); 
+    RENDER_CACHE.set(url, shortcode); 
 
     db.put(key, Date.now())
       //stream.destroy();
@@ -215,7 +215,7 @@ async function iterateQueue () {
       //console.log(url)
       var res = await queue.get(item.key)
       var result = JSON.parse(res)
-      var url = decodeURIComponent(result.url)
+      var url = result.url
       queue.del(item.key)
       console.log("Removed item ", item.key, " from list")
       await indexItem(url, item.key)
