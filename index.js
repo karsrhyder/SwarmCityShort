@@ -187,7 +187,7 @@ async function indexItem(url, key) {
 
     queue.del(key)
     console.log("Removed item ", key, " from list")
-    RENDER_CACHE.set(url, shortcode); 
+    RENDER_CACHE.set(encodeURIComponent(url), shortcode); 
 
     db.put(key, Date.now())
       //stream.destroy();
