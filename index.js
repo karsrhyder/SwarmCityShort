@@ -11,6 +11,8 @@ const app = express();
 const cors = require('cors')
 const browserPagePool = require('./services/browserPagePool.js');
 const RENDER_CACHE = new Map();
+var Cache = require('async-disk-cache');
+var cache = new Cache('SCShortCache');
 
 const asyncMiddleware = fn =>
     (req, res, next) => {
@@ -57,31 +59,32 @@ app.get('/r/:item', async (request, response) => {
     if(err) {
       response.status(404).send('Not found (yet)');
     }
-  })
-   
-
+  })  
 })
 
 app.get('/s/:url', async (request, response) => {
   console.log('asking for short: ', request.params.url)
   const url = decodeURIComponent(request.params.url);
-  if (RENDER_CACHE.has(url)) {
-    console.log('serving from cache')
-    return response.type('text').send('https://i.swarm.city/r/'+RENDER_CACHE.get(url))
-  }
-  if (!url) {
-    return response.status(400).send(
-      'Please provide a URL. Example: ?url=https://example.com');
-  }
-  var shortcode = shortid.generate()
-  var data = {
-    url: url, 
-    short: shortcode,
-    time: Date.now()
-  }
-  var res = await queue.put(shortcode, JSON.stringify(data))
-  console.log('sending to queue')
-  response.type('text').send('https://i.swarm.city/r/'+shortcode)
+  // if (RENDER_CACHE.has(url)) {
+  //   console.log('serving from cache')
+  //   return response.type('text').send('https://i.swarm.city/r/'+RENDER_CACHE.get(url))
+  // }
+  cache.get(url).then(function(cacheEntry) {
+    if(cacheEntry.isCached) {
+      console.log('Serving from cache')
+      return response.type('text').send('https://i.swarm.city/r/'+cacheEntry.value)
+    } else {
+      var shortcode = shortid.generate()
+      var data = {
+        url: url, 
+        short: shortcode,
+        time: Date.now()
+      }
+      var res = queue.put(shortcode, JSON.stringify(data))
+      console.log('sending to queue')
+      response.type('text').send('https://i.swarm.city/r/'+shortcode)
+    }
+  }); 
 });
 
 async function indexItem(url, key) {
@@ -187,8 +190,8 @@ async function indexItem(url, key) {
 
     queue.del(key)
     console.log("Removed item ", key, " from list")
-    RENDER_CACHE.set(url, shortcode); 
-
+    //RENDER_CACHE.set(url, shortcode) 
+    await cache.set(url, key)
     db.put(key, Date.now())
       //stream.destroy();
     //return true
@@ -247,6 +250,7 @@ signals.forEach(sig => {
 
 async function runShortService() {
   console.log("Swarm City Short Service")
+  cache.clear()
 
   
 
