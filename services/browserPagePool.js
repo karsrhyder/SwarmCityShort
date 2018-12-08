@@ -5,7 +5,7 @@ const factory = {
   create: async function() {
     const browser = await puppeteer.launch({
         // dumpio: true,
-        headless: false,
+        // headless: false,
         // executablePath: 'google-chrome',
         args: ['--no-sandbox', '--disable-setuid-sandbox'], // , '--disable-dev-shm-usage']
     });
