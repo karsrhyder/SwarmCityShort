@@ -19,6 +19,11 @@ app.listen(PORT, function() {
 /** Open up the /shots directory so the html page can use it */
 app.use(express.static('shots'))
 
+/** Origin = everybody! */
+app.use(cors({
+    origin: '*'
+}));
+
 /** Resolve the shortlink to the html page on disk */
 app.get('/r/:item', async (request, response) => {
     console.log(`/r/ item `, request.params.item);
