@@ -2,14 +2,14 @@ const express = require('express')
 const shortid = require('shortid')
 const fs = require('fs')
 const level = require('level')
-const renderQueue = level('./queue')
-const PORT = process.env.PORT || 8080
+const renderQ = level('./hashtagRenderQ')
+const PORT = process.env.PORT || 8090
 const app = express();
 const cors = require('cors')
 const browserPagePool = require('./services/browserPagePool.js')
 const Cache = require('async-disk-cache')
-const shortCache = new Cache('shortCache')
-
+const hashtagCache = new Cache('hashtagCache')
+hashtagCache.clear()
 /** EXPRESS */
 /** Set the port */
 app.listen(PORT, function() {
@@ -17,7 +17,7 @@ app.listen(PORT, function() {
 });
 
 /** Open up the /shots directory so the html page can use it */
-app.use(express.static('shots'))
+app.use(express.static('hashtags'))
 
 /** Origin = everybody! */
 app.use(cors({
@@ -28,7 +28,7 @@ app.use(cors({
 app.get('/r/:item', async (request, response) => {
     console.log(`/r/ item `, request.params.item);
     const short = request.params.item
-    response.sendFile(__dirname + '/shots/'+short+'.html', function(err, res){
+    response.sendFile(__dirname + '/hashtags/'+short+'.html', function(err, res){
         if(err) {
           response.status(404).send('Not found (yet)');
         }
@@ -49,7 +49,7 @@ app.get('/s/:url', async (request, response) => {
 /** requestShareableLink(url, short) */
 async function requestShareableLink(url, cb) {
     console.log(`requestShareableLink `, url);
-    shortCache.get(url).then((cacheEntry) => {
+    hashtagCache.get(url).then((cacheEntry) => {
         if (cacheEntry.isCached) {
             console.log(`requestShareableLink found in cache `, url);
             const shareableLink = 'https://i.swarm.city/r/' + cacheEntry.value
@@ -67,13 +67,13 @@ async function requestShareableLink(url, cb) {
 /** resolveShareableLink(url) */
 async function resolveShareableLink(short) {
     console.log(`resolveShareableLink `, short);
-    shortCache.get(short).then(function(cacheEntry) {
+    hashtagCache.get(short).then(function(cacheEntry) {
         if (cacheEntry.isCached) {
-            console.log(`shortCache: is cached `, short);
+            console.log(`hashtagCache: is cached `, short);
             const shortLink = 'https://i.swarm.city/r/' + cacheEntry.value
             return shortLink
         } else {
-            console.log(`shortCache: is err `, short);
+            console.log(`hashtagCache: is err `, short);
             return 'error'
         }
     })
@@ -96,18 +96,25 @@ async function createShareableLink(url, short) {
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
     await createImage(page, short)
     await createPage(page, short, url)
-    await shortCache.set(url, short)
+    await hashtagCache.set(url, short)
     return true
 } 
 
 /** createImage(element) */
 async function createImage(page, short) {
     console.log(`createImage `, page, short);
-    const isolatedCardHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div')`);
-    const closebox = await isolatedCardHandle.$eval(`.closebox`, e => e.children[0].hidden = true);
-    const linkbox = await isolatedCardHandle.$eval(`.linkbox`, e => e.children[1].hidden = true);
+
+    // click 
+    // document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-hashtag').shadowRoot.querySelector('display-simpledeal-title').shadowRoot.querySelector('#infolink')
+    const infoButton = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-hashtag').shadowRoot.querySelector('display-simpledeal-title').shadowRoot.querySelector('#infolink')`);
+
+    await infoButton.click()
+    
+    const isolatedCardHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-hashtag').shadowRoot.querySelector('display-simpledeal-title').shadowRoot.querySelector('#about')`);
+    //const closebox = await isolatedCardHandle.$eval(`.arrowup-icon`, e => e.children[0].hidden = true);
+    //const linkbox = await isolatedCardHandle.$eval(`.linkbox`, e => e.children[1].hidden = true);
     const isolatedCardBuffer = await isolatedCardHandle.screenshot()
-    fs.writeFile('shots/'+short+'.png', isolatedCardBuffer, function (err) {
+    fs.writeFile('hashtags/'+short+'.png', isolatedCardBuffer, function (err) {
         if (err) throw err;
     });
     return true 
@@ -116,22 +123,22 @@ async function createImage(page, short) {
 /** createPage(element, short) */
 async function createPage(page, short, url) {
     console.log(`createPage `, page, short);
-    const descriptionHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div > div.description')`);
+    const descriptionHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-hashtag').shadowRoot.querySelector('display-simpledeal-title').shadowRoot.querySelector('#about').shadowRoot.querySelector('div > div:nth-child(1) > div.content')`);
     const descriptionElement = await (await descriptionHandle.getProperty('textContent'));
     var description = descriptionElement._remoteObject.value
     description = description.replace(/\s+/g,' ').trim() // results in 'white space'
 
-    const hashtagHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('display-simpledeal-title').shadowRoot.querySelector('div > div.namebox')`);
+    const hashtagHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-hashtag').shadowRoot.querySelector('display-simpledeal-title').shadowRoot.querySelector('#about').shadowRoot.querySelector('div > div:nth-child(1) > div.title')`);
     const hashtagElement = await (await hashtagHandle.getProperty('textContent'));
     var hashtag = hashtagElement._remoteObject.value
     hashtag = hashtag.replace(/\s+/g,' ').trim() // results in 'white space'
 
-    const swtHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div > div.seeker > div.pricebox > div.value')`);
+    const swtHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-hashtag').shadowRoot.querySelector('display-simpledeal-title').shadowRoot.querySelector('#about').shadowRoot.querySelector('div > div:nth-child(2) > div.content')`);
     const swtElement = await (await swtHandle.getProperty('textContent'));
     var swt = swtElement._remoteObject.value
 
-    var prettyDescription = 'Reply to this request for ' + swt + ' SWT, posted on hashtag ' + hashtag;
-    var prettyTitle = hashtag + ': ' + description + ' for ' +swt+ ' SWT';
+    var prettyDescription = description;
+    var prettyTitle = hashtag;
 
     var image = short+`.png`
     
@@ -150,13 +157,13 @@ async function createPage(page, short, url) {
         <meta name="twitter:title" content="`+prettyTitle+`"/>
         <meta name="twitter:widgets:csp" content="on"/>
         <meta name="twitter:site" content="@SwarmCityDapp"/>
-        <meta name="twitter:image" content="https://i.swarm.city/shots/`+image+`"/>
+        <meta name="twitter:image" content="https://i.swarm.city/hashtags/`+image+`"/>
 
 
         <meta property="og:title" content="`+prettyTitle+`">
         <meta property="og:description" content="`+prettyDescription+`"/>
         <meta property="og:url" content="https://i.swarm.city/r/`+short+`"/>
-        <meta property="og:image" content="https://i.swarm.city/shots/`+image+`"/>
+        <meta property="og:image" content="https://i.swarm.city/hashtags/`+image+`"/>
 
         <meta property="og:type" content="article"/>
         <meta property="og:site_name" content="Swarm.city"/>
@@ -166,17 +173,17 @@ async function createPage(page, short, url) {
 
     </head>
     <body>
-    <img src="https://i.swarm.city/shots/`+image+`" width="1" height="1">
+    <img src="https://i.swarm.city/hashtags/`+image+`" width="1" height="1">
     </body>
     </html>
   `
-    fs.writeFile('shots/'+short+'.html', html, function (err) {
+    fs.writeFile('hashtags/'+short+'.html', html, function (err) {
       if (err) throw err;
     });
 }
-/** iterateRenderQueue() */
+/** iteraterenderQ() */
 async function iterateRenderQueue() {
-    renderQueue.createReadStream({
+    renderQ.createReadStream({
         keys: true,
         values: true
     })
@@ -188,13 +195,13 @@ async function iterateRenderQueue() {
 
 /** removeFromRenderCache(url) */
 async function removeFromRenderCache(url) {
-    await renderQueue.del(url)
+    await renderQ.del(url)
     return true
 }
 
 /** addToRenderCache(url, short) */
 async function addToRenderCache(url, short) {
-    await renderQueue.put(url, short)
+    await renderQ.put(url, short)
     return true
 }
 
