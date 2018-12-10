@@ -79,6 +79,8 @@ async function resolveShareableLink(short) {
     })
 }
 
+
+
 /** Partial functionality */
 /** createShareableLink(url, short) */
 async function createShareableLink(url, short) {
@@ -104,7 +106,7 @@ async function createShareableLink(url, short) {
 async function createImage(page, short) {
     console.log(`createImage `, page, short);
     const isolatedCardHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div')`);
-    const closebox = await isolatedCardHandle.$eval(`.closebox`, e => e.children[0].hidden = true);
+    //const closebox = await isolatedCardHandle.$eval(`.closebox`, e => e.children[0].hidden = true);
     const linkbox = await isolatedCardHandle.$eval(`.linkbox`, e => e.children[1].hidden = true);
     const isolatedCardBuffer = await isolatedCardHandle.screenshot()
     fs.writeFile('shots/'+short+'.png', isolatedCardBuffer, function (err) {
