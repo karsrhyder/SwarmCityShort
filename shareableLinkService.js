@@ -6,7 +6,7 @@ const renderQueue = level('./queue')
 const PORT = process.env.PORT || 8080
 const app = express();
 const cors = require('cors')
-const browserPagePool = require('./services/browserPagePool.js')
+const browserPagePool = require('./browserPagePool.js')
 const Cache = require('async-disk-cache')
 const shortCache = new Cache('shortCache')
 
@@ -95,7 +95,8 @@ async function createShareableLink(url, short) {
     };
   
     await page.setViewport(viewport);
-    await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
+    await page.goto(url);
+    await page.waitFor(4000);
     await createImage(page, short)
     await createPage(page, short, url)
     await shortCache.set(url, short)
@@ -104,7 +105,7 @@ async function createShareableLink(url, short) {
 
 /** createImage(element) */
 async function createImage(page, short) {
-    console.log(`createImage `, page, short);
+    //console.log(`createImage `, page, short);
     const isolatedCardHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div')`);
     //const closebox = await isolatedCardHandle.$eval(`.closebox`, e => e.children[0].hidden = true);
     const linkbox = await isolatedCardHandle.$eval(`.linkbox`, e => e.children[1].hidden = true);
@@ -117,7 +118,7 @@ async function createImage(page, short) {
 
 /** createPage(element, short) */
 async function createPage(page, short, url) {
-    console.log(`createPage `, page, short);
+    //console.log(`createPage `, page, short);
     const descriptionHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div > div.description')`);
     const descriptionElement = await (await descriptionHandle.getProperty('textContent'));
     var description = descriptionElement._remoteObject.value
