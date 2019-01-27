@@ -85,30 +85,37 @@ async function resolveShareableLink(short) {
 /** createShareableLink(url, short) */
 async function createShareableLink(url, short) {
     await removeFromRenderCache(url)
+    // strip url only get after /detail/hashtag/itemhash
+    var pathname = new URL(url).pathname;
+    console.log('pathname: ', pathname)
+    var arraypath = await pathname.split("/");
+    console.log(arraypath);
+    var newURL = 'https://agitated-brown-a9878f.netlify.com/' + arraypath[2] + '/' + arraypath[3];
+    console.log(arraypath[0],arraypath[1],arraypath[2]);
+    //console.log()
     console.log(`createShareableLink `, url, short);
     const page = await browserPagePool.acquire();
 
     const viewport = {
-      width: 375,
-      height: 662,
+      width: 662,
+      height: 675,
       deviceScaleFactor: 2
     };
   
     await page.setViewport(viewport);
-    await page.goto(url);
-    await page.waitFor(4000);
+    await page.goto(newURL, {"waitUntil" : "networkidle2"});
     await createImage(page, short)
     await createPage(page, short, url)
-    await shortCache.set(url, short)
+    //await shortCache.set (url, short)
     return true
 } 
 
 /** createImage(element) */
 async function createImage(page, short) {
     //console.log(`createImage `, page, short);
-    const isolatedCardHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div')`);
+    const isolatedCardHandle = await page.evaluateHandle(`document.querySelector('.App')`);
     //const closebox = await isolatedCardHandle.$eval(`.closebox`, e => e.children[0].hidden = true);
-    const linkbox = await isolatedCardHandle.$eval(`.linkbox`, e => e.children[1].hidden = true);
+    //const linkbox = await isolatedCardHandle.$eval(`.linkbox`, e => e.children[1].hidden = true);
     const isolatedCardBuffer = await isolatedCardHandle.screenshot()
     fs.writeFile('shots/'+short+'.png', isolatedCardBuffer, function (err) {
         if (err) throw err;
@@ -119,17 +126,17 @@ async function createImage(page, short) {
 /** createPage(element, short) */
 async function createPage(page, short, url) {
     //console.log(`createPage `, page, short);
-    const descriptionHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div > div.description')`);
+    const descriptionHandle = await page.evaluateHandle(`document.querySelector('.description')`);
     const descriptionElement = await (await descriptionHandle.getProperty('textContent'));
     var description = descriptionElement._remoteObject.value
     description = description.replace(/\s+/g,' ').trim() // results in 'white space'
 
-    const hashtagHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('display-simpledeal-title').shadowRoot.querySelector('div > div.namebox')`);
+    const hashtagHandle = await page.evaluateHandle(`document.querySelector('.hashtagName')`);
     const hashtagElement = await (await hashtagHandle.getProperty('textContent'));
     var hashtag = hashtagElement._remoteObject.value
     hashtag = hashtag.replace(/\s+/g,' ').trim() // results in 'white space'
 
-    const swtHandle = await page.evaluateHandle(`document.querySelector('body > swarm-city').shadowRoot.querySelector('iron-pages > page-detail').shadowRoot.querySelector('detail-simpledeal').shadowRoot.querySelector('div > div > detail-simpledeal-main').shadowRoot.querySelector('div > div.seeker > div.pricebox > div.value')`);
+    const swtHandle = await page.evaluateHandle(`document.querySelector('.value')`);
     const swtElement = await (await swtHandle.getProperty('textContent'));
     var swt = swtElement._remoteObject.value
 
