@@ -9,7 +9,7 @@ const cors = require('cors')
 const browserPagePool = require('./browserPagePool.js')
 const Cache = require('async-disk-cache')
 const shortCache = new Cache('shortCache')
-
+//shortCache.clear();
 /** EXPRESS */
 /** Set the port */
 app.listen(PORT, function() {
@@ -103,7 +103,9 @@ async function createShareableLink(url, short) {
     };
   
     await page.setViewport(viewport);
-    await page.goto(newURL, {"waitUntil" : "networkidle2"});
+    await page.goto(newURL);
+    await page.evaluateHandle(`document.querySelector('.hashtagName')`);
+    await page.waitForFunction(`document.querySelector('.hashtagName').innerHTML !== '#unknown'`);
     await createImage(page, short)
     await createPage(page, short, url)
     await shortCache.set (url, short)
