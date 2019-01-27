@@ -106,7 +106,7 @@ async function createShareableLink(url, short) {
     await page.goto(newURL, {"waitUntil" : "networkidle2"});
     await createImage(page, short)
     await createPage(page, short, url)
-    //await shortCache.set (url, short)
+    await shortCache.set (url, short)
     return true
 } 
 
