@@ -15,14 +15,14 @@ const shortCache = new Cache('shortCache')
 app.listen(PORT, function() {
     console.log(`App is listening on port ${PORT}`);
 });
-
-/** Open up the /shots directory so the html page can use it */
-app.use(express.static('shots'))
-
 /** Origin = everybody! */
 app.use(cors({
     origin: '*'
 }));
+/** Open up the /shots directory so the html page can use it */
+app.use("/shots", express.static(__dirname + '/shots'));
+
+
 
 /** Resolve the shortlink to the html page on disk */
 app.get('/r/:item', async (request, response) => {
