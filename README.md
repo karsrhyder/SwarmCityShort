@@ -1,10 +1,10 @@
-# SwarmCityShortShare
+# SwarmCityShortener
 
-This API / webserver generates and serves shortcodes for social media sharing
+This API / webserver generates and serves short urls for social media sharing
 
-## Generate short link
+## Generate short url
 
-To generate a short link, the front end has to do a POST request to "/" with json data:
+To generate a short url, the front end has to do a POST request to "/" with json data:
 
 ```js
 {
@@ -22,7 +22,7 @@ The API will reply with json:
 }
 ```
 
-## Query short link
+## Query short url
 
 Just do a regular GET request to the url ${host}/${id}, i.e. i.swarm.city/da49j0uB4umlgHSLf7n9
 It will return an HTML with meta tags to be properly displayed in social media

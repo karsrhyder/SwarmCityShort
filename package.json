@@ -1,7 +1,7 @@
 {
-  "name": "swarmcityshortshare",
+  "name": "swarmcity-shortener",
   "version": "1.0.0",
-  "description": "SwarmCityShortShare",
+  "description": "SwarmCityShortener",
   "main": "index.js",
   "scripts": {
     "test": "mocha --exit",

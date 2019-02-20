@@ -1,6 +1,6 @@
 const express = require("express");
 const es6Renderer = require("express-es6-template-engine");
-const db = require("level")("./db-shorten-links");
+const db = require("level")(process.env.DB_PATH || "./db");
 // Utils
 const getShortId = require("./utils/getShortId");
 const wrapErrors = require("./utils/wrapErrors");
