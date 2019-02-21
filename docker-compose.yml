@@ -1,0 +1,11 @@
+version: "3.4"
+
+volumes:
+  shortener_data: {}
+
+services:
+  shortener:
+    build: "."
+    restart: always
+    volumes:
+      - "shortener_data:/usr/src/app/db"
