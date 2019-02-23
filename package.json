@@ -2,7 +2,7 @@
   "name": "swarmcity-shortener",
   "version": "1.0.0",
   "description": "SwarmCityShortener",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "mocha --exit",
     "start": "node server"
