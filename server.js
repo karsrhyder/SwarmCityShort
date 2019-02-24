@@ -43,12 +43,7 @@ app.engine("html", es6Renderer); // Template literal renderer
 app.set("views", "views");
 app.set("view engine", "html");
 
-app.get(
-  "/",
-  wrapErrors(async (_, res) => {
-    res.render("index");
-  })
-);
+app.get("/", (_, res) => res.send("Swarm City shortener service"));
 
 app.get(
   "/:id",

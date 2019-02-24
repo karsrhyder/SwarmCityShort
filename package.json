@@ -1,14 +1,13 @@
 {
   "name": "swarmcity-shortener",
   "version": "1.0.0",
-  "description": "SwarmCityShortener",
   "main": "server.js",
   "scripts": {
     "test": "mocha --exit",
     "start": "node server"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "swarmcity",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.16.4",
     "express-es6-template-engine": "^2.1.7",
